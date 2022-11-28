@@ -1,3 +1,3 @@
 exports.hello = (req, res) => {
-    res.json('Hello world')
+    res.status(200).json({msg: 'Hello world'})
 }

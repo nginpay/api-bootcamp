@@ -1,16 +1,17 @@
 //importar models
-const { HostNotFoundError } = require('sequelize')
 const {User} = require('../models/index')
-
+const bcrypt = require('bcryptjs');
+const salt = bcrypt.genSaltSync(10);
+const jwt = require('jsonwebtoken')
 
 exports.createUsers  = async (req, res) => {
     try{
 
-        const  { firstName, lastName, email } = req.body
+        const  { firstName, lastName, email, password} = req.body
 
         // valida se os campos firstName e email existem na requisição
         // retorna um erro caso um desses campos não esteja no body.
-        if(!firstName || !email){
+        if(!firstName || !email || !password){
             return res.status(400).json({"error": "firstName or email invalid or null - please try again"})
         }
     
@@ -20,9 +21,18 @@ exports.createUsers  = async (req, res) => {
             return res.status(302).json({"error": "user exist"})
         }
     
-        const userAdded = await User.create(req.body)
+        const hashpassword = bcrypt.hashSync(req.body.password, salt)
+        const userData  = {
+            firstName: firstName,
+            lastName: lastName,
+            email: email,
+            password: hashpassword
+            
+        }
+
+        const userAdded = await User.create(userData)
     
-        return res.status(201).json(userAdded)
+        return res.status(201).json({user: userAdded})
 
     }catch(error){
         res.send({
@@ -92,4 +102,40 @@ exports.updatePathUser = async (req, res) => {
     )
 
     return res.json({msg: 'user updated'})
+}
+
+
+exports.loginUser = async (req, res, next) => {
+    const { user, password } = req.body
+
+    if(!user || !password){
+        return res.status(400).json({error: "invalid credentials"})
+    }
+
+    const userValidate = await User.findOne({where: {email: user}})
+
+    if(!userValidate){
+        return res.status(404).json({error: "user not found"})
+    }
+
+    const userEmail = userValidate.email
+    const userPassword = userValidate.password
+
+    const pwdValidate = bcrypt.compareSync(password, userPassword);
+
+    if(!pwdValidate){
+        return res.status(404).json({error: "invalid login"})
+    }
+
+    const id = userValidate.id
+
+    //return res.status(200).json({msg: "login success"})
+    const token = jwt.sign({id}, process.env.SECRET, {
+        expiresIn: 3000 //expira em 5min
+    })
+
+    return res.status(200).json({
+        auth: true,
+        token: token
+    })
 }
