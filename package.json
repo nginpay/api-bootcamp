@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon server.js",
+    "start": "node server.js",
     "test": "jest"
   },
   "keywords": [],
@@ -18,6 +18,7 @@
     "fs": "^0.0.1-security",
     "jest": "^29.3.1",
     "jsonwebtoken": "^8.5.1",
+    "mysql2": "^2.3.3",
     "sequelize": "^6.25.5",
     "sequelize-cli": "^6.5.2",
     "sqlite3": "^5.1.2",
