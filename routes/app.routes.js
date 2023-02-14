@@ -13,5 +13,7 @@ module.exports = app => {
     router.patch('/users/:id', UserController.updatePathUser)
     router.post('/login', UserController.loginUser)
 
+    // teste de mudança
+
     app.use('/api', router)
 }
